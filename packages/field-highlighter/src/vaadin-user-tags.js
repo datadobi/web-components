@@ -9,6 +9,7 @@ import { calculateSplices } from '@polymer/polymer/lib/utils/array-splice.js';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { timeOut } from '@vaadin/component-base/src/async.js';
 import { Debouncer } from '@vaadin/component-base/src/debounce.js';
+import { getAncestorRootNodes } from '@vaadin/component-base/src/dom-utils.js';
 
 const DURATION = 200;
 const DELAY = 2000;
@@ -111,15 +112,24 @@ export class UserTags extends PolymerElement {
   /** @protected */
   connectedCallback() {
     super.connectedCallback();
+
+    this.__ancestorRootNodes = getAncestorRootNodes(this);
+    this.__ancestorRootNodes.forEach((node) => {
+      node.addEventListener('scroll', this._boundSetPosition, true);
+    });
+
     window.addEventListener('resize', this._boundSetPosition);
-    window.addEventListener('scroll', this._boundSetPosition);
   }
 
   /** @protected */
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('resize', this._boundSetPosition);
-    window.removeEventListener('scroll', this._boundSetPosition);
+
+    this.__ancestorRootNodes.forEach((node) => {
+      node.removeEventListener('scroll', this._boundSetPosition, true);
+    });
+
     this.opened = false;
   }
 
